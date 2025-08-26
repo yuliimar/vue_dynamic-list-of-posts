@@ -3,44 +3,60 @@
     <h4 class="title is-6">Add Comment</h4>
 
     <form @submit.prevent="submitComment">
+      <!-- Name Field -->
       <div class="field">
         <label class="label">Name</label>
         <div class="control">
           <input
             v-model="form.name"
             class="input"
+            :class="{ 'is-danger': errors.name && submitted }"
             type="text"
             placeholder="Your name"
-            required
+            @input="clearError('name')"
           />
         </div>
+        <p v-if="errors.name && submitted" class="help is-danger">
+          {{ errors.name }}
+        </p>
       </div>
 
+      <!-- Email Field -->
       <div class="field">
         <label class="label">Email</label>
         <div class="control">
           <input
             v-model="form.email"
             class="input"
+            :class="{ 'is-danger': errors.email && submitted }"
             type="email"
             placeholder="Your email"
-            required
+            @input="clearError('email')"
           />
         </div>
+        <p v-if="errors.email && submitted" class="help is-danger">
+          {{ errors.email }}
+        </p>
       </div>
 
+      <!-- Comment Field -->
       <div class="field">
         <label class="label">Comment</label>
         <div class="control">
           <textarea
             v-model="form.body"
             class="textarea"
+            :class="{ 'is-danger': errors.body && submitted }"
             placeholder="Write your comment here..."
-            required
+            @input="clearError('body')"
           ></textarea>
         </div>
+        <p v-if="errors.body && submitted" class="help is-danger">
+          {{ errors.body }}
+        </p>
       </div>
 
+      <!-- Buttons -->
       <div class="field is-grouped">
         <div class="control">
           <button
@@ -49,6 +65,11 @@
             :class="{ 'is-loading': loading }"
           >
             Submit
+          </button>
+        </div>
+        <div class="control">
+          <button type="button" class="button is-light" @click="clearAll">
+            Clear
           </button>
         </div>
         <div class="control">
@@ -84,33 +105,78 @@ export default {
       body: "",
     });
 
+    const errors = ref({
+      name: "",
+      email: "",
+      body: "",
+    });
+
     const loading = ref(false);
+    const submitted = ref(false);
+
+    const validateForm = () => {
+      errors.value = { name: "", email: "", body: "" };
+      let isValid = true;
+
+      if (!form.value.name.trim()) {
+        errors.value.name = "Name is required";
+        isValid = false;
+      }
+
+      if (!form.value.email.trim()) {
+        errors.value.email = "Email is required";
+        isValid = false;
+      } else if (!/\S+@\S+\.\S+/.test(form.value.email)) {
+        errors.value.email = "Email is invalid";
+        isValid = false;
+      }
+
+      if (!form.value.body.trim()) {
+        errors.value.body = "Comment is required";
+        isValid = false;
+      }
+
+      return isValid;
+    };
+
+    const clearError = (field) => {
+      if (errors.value[field]) {
+        errors.value[field] = "";
+      }
+    };
+
+    const clearAll = () => {
+      form.value = { name: "", email: "", body: "" };
+      errors.value = { name: "", email: "", body: "" };
+      submitted.value = false;
+    };
 
     const submitComment = async () => {
+      submitted.value = true;
+
+      if (!validateForm()) {
+        return;
+      }
+
       loading.value = true;
+
       const commentData = {
         ...form.value,
         postId: props.postId,
       };
+
       emit("add-comment", commentData);
-      // Форма очищається в батьківському компоненті після успішного додавання
     };
 
     return {
       form,
+      errors,
       loading,
+      submitted,
       submitComment,
+      clearError,
+      clearAll,
     };
   },
 };
 </script>
-
-<style scoped>
-.comment-form {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  border: 1px solid #dbdbdb;
-  border-radius: 4px;
-  background: #f5f5f5;
-}
-</style>

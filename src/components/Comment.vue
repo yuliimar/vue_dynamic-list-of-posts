@@ -23,7 +23,7 @@
         <div class="level-left">
           <button
             class="button is-small is-danger level-item"
-            @click="$emit('delete-comment', comment.id)"
+            @click="handleDelete"
             :class="{ 'is-loading': deleting }"
           >
             Delete
@@ -43,7 +43,6 @@ export default {
     comment: {
       type: Object,
       required: true,
-      default: () => ({}),
     },
   },
   emits: ["delete-comment"],
@@ -52,8 +51,12 @@ export default {
 
     const handleDelete = async () => {
       deleting.value = true;
-      emit("delete-comment", props.comment.id);
-      // Стейт deleting буде скинутий батьківським компонентом після успішного видалення
+      try {
+        emit("delete-comment", props.comment.id);
+      } finally {
+        // deleting.value буде скинуто в батьківському компоненті
+        // після успішного видалення або помилки
+      }
     };
 
     return {
@@ -63,29 +66,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.media {
-  border: 1px solid #dbdbdb;
-  border-radius: 4px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: white;
-}
-
-.media:last-child {
-  margin-bottom: 0;
-}
-
-.media-content {
-  overflow: hidden;
-}
-
-.content {
-  margin-bottom: 0.5rem;
-}
-
-.level {
-  margin-top: 0.5rem;
-}
-</style>
