@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 export default {
   name: "CommentForm",
@@ -95,6 +95,10 @@ export default {
     postId: {
       type: Number,
       required: true,
+    },
+    clearBody: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ["add-comment", "cancel"],
@@ -113,6 +117,16 @@ export default {
 
     const loading = ref(false);
     const submitted = ref(false);
+
+    watch(
+      () => props.clearBody,
+      (newValue) => {
+        if (newValue) {
+          form.value.body = "";
+          errors.value.body = "";
+        }
+      }
+    );
 
     const validateForm = () => {
       errors.value = { name: "", email: "", body: "" };
@@ -151,6 +165,11 @@ export default {
       submitted.value = false;
     };
 
+    const clearBodyOnly = () => {
+      form.value.body = "";
+      errors.value.body = "";
+    };
+
     const submitComment = async () => {
       submitted.value = true;
 
@@ -165,7 +184,13 @@ export default {
         postId: props.postId,
       };
 
-      emit("add-comment", commentData);
+      try {
+        emit("add-comment", commentData);
+      } catch (error) {
+        console.error("Error submitting comment:", error);
+      } finally {
+        loading.value = false;
+      }
     };
 
     return {
@@ -176,6 +201,7 @@ export default {
       submitComment,
       clearError,
       clearAll,
+      clearBodyOnly,
     };
   },
 };

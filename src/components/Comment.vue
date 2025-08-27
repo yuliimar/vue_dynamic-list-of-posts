@@ -54,8 +54,6 @@ export default {
       try {
         emit("delete-comment", props.comment.id);
       } finally {
-        // deleting.value буде скинуто в батьківському компоненті
-        // після успішного видалення або помилки
       }
     };
 

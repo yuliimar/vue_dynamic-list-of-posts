@@ -4,29 +4,10 @@
       <div class="block">
         <div class="block is-flex is-justify-content-space-between">
           <p class="title">Posts</p>
-          <button
-            type="button"
-            class="button is-link"
-            @click="$emit('create-post')"
-          >
-            Add New Post
-          </button>
-        </div>
-
-        <div v-if="loading" class="has-text-centered">
-          <Loader />
-        </div>
-
-        <div v-else-if="error" class="notification is-danger">
-          {{ error }}
-        </div>
-
-        <div v-else-if="posts.length === 0" class="notification is-warning">
-          No posts yet
         </div>
 
         <table
-          v-else
+          v-if="posts.length > 0"
           class="table is-fullwidth is-striped is-hoverable is-narrow"
         >
           <thead>
@@ -52,27 +33,22 @@
             </tr>
           </tbody>
         </table>
+
+        <div v-else class="notification is-warning">No posts to display</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import Loader from "./Loader.vue";
-
 export default {
   name: "PostsList",
-  components: {
-    Loader,
-  },
   props: {
     posts: {
       type: Array,
       default: () => [],
     },
-    loading: Boolean,
-    error: String,
   },
-  emits: ["select-post", "create-post"],
+  emits: ["select-post"],
 };
 </script>

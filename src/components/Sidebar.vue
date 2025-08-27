@@ -129,6 +129,7 @@
               <CommentForm
                 v-else
                 :postId="currentPost.id"
+                :clear-body="clearBodyFlag"
                 @add-comment="handleAddComment"
                 @cancel="showCommentForm = false"
               />
@@ -200,7 +201,7 @@
 </template>
 
 <script>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch } from "vue";
 import Loader from "./Loader.vue";
 import Comment from "./Comment.vue";
 import CommentForm from "./CommentForm.vue";
@@ -239,6 +240,7 @@ export default {
     const commentsLoading = ref(false);
     const commentsError = ref(null);
     const showCommentForm = ref(false);
+    const clearBodyFlag = ref(false);
 
     const postErrors = ref({
       title: "",
@@ -329,8 +331,14 @@ export default {
       try {
         const newComment = await createComment(commentData);
         comments.value.push(newComment);
-        // Clear only comment body, keep name and email
-        showCommentForm.value = false;
+
+        // Set flag to clear only body in CommentForm
+        clearBodyFlag.value = true;
+
+        // Reset flag after short delay
+        setTimeout(() => {
+          clearBodyFlag.value = false;
+        }, 100);
       } catch (err) {
         console.error("Error adding comment:", err);
         commentsError.value = "Failed to add comment";
@@ -360,6 +368,7 @@ export default {
       commentsLoading,
       commentsError,
       showCommentForm,
+      clearBodyFlag,
       postErrors,
       postSubmitted,
       validateAndCreatePost,
