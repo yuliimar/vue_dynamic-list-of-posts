@@ -126,10 +126,11 @@
               </div>
 
               <!-- Comment form -->
+
               <CommentForm
                 v-else
                 :postId="currentPost.id"
-                :clear-body="clearBodyFlag"
+                :addSucceededKey="addSucceededKey"
                 @add-comment="handleAddComment"
                 @cancel="showCommentForm = false"
               />
@@ -137,10 +138,12 @@
           </div>
 
           <!-- Create Post Form -->
+
           <div v-else>
             <h2 class="title is-4">Create New Post</h2>
 
             <!-- Title Field -->
+
             <div class="field">
               <label class="label">Title</label>
               <div class="control">
@@ -162,6 +165,7 @@
             </div>
 
             <!-- Content Field -->
+
             <div class="field">
               <label class="label">Content</label>
               <div class="control">
@@ -240,7 +244,7 @@ export default {
     const commentsLoading = ref(false);
     const commentsError = ref(null);
     const showCommentForm = ref(false);
-    const clearBodyFlag = ref(false);
+    const addSucceededKey = ref(0); // New success signal
 
     const postErrors = ref({
       title: "",
@@ -269,6 +273,7 @@ export default {
           showCommentForm.value = false;
           postErrors.value = { title: "", body: "" };
           postSubmitted.value = false;
+          addSucceededKey.value = 0; // Reset success key
         }
       }
     );
@@ -332,13 +337,10 @@ export default {
         const newComment = await createComment(commentData);
         comments.value.push(newComment);
 
-        // Set flag to clear only body in CommentForm
-        clearBodyFlag.value = true;
+        // Increment success key to signal successful addition
+        addSucceededKey.value += 1;
 
-        // Reset flag after short delay
-        setTimeout(() => {
-          clearBodyFlag.value = false;
-        }, 100);
+        // FORM REMAINS OPEN - don't set showCommentForm.value = false
       } catch (err) {
         console.error("Error adding comment:", err);
         commentsError.value = "Failed to add comment";
@@ -368,7 +370,7 @@ export default {
       commentsLoading,
       commentsError,
       showCommentForm,
-      clearBodyFlag,
+      addSucceededKey,
       postErrors,
       postSubmitted,
       validateAndCreatePost,

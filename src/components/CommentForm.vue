@@ -96,9 +96,9 @@ export default {
       type: Number,
       required: true,
     },
-    clearBody: {
-      type: Boolean,
-      default: false,
+    addSucceededKey: {
+      type: [Number, String],
+      default: 0,
     },
   },
   emits: ["add-comment", "cancel"],
@@ -118,12 +118,16 @@ export default {
     const loading = ref(false);
     const submitted = ref(false);
 
+    // Watch for success signal from parent
     watch(
-      () => props.clearBody,
-      (newValue) => {
-        if (newValue) {
+      () => props.addSucceededKey,
+      (newKey, oldKey) => {
+        if (newKey !== oldKey && newKey > 0) {
+          // Success confirmed by parent - reset form state
           form.value.body = "";
           errors.value.body = "";
+          loading.value = false;
+          submitted.value = false;
         }
       }
     );
@@ -165,11 +169,6 @@ export default {
       submitted.value = false;
     };
 
-    const clearBodyOnly = () => {
-      form.value.body = "";
-      errors.value.body = "";
-    };
-
     const submitComment = async () => {
       submitted.value = true;
 
@@ -186,9 +185,10 @@ export default {
 
       try {
         emit("add-comment", commentData);
+        // Loading will be reset by parent through addSucceededKey
+        // when the API call is truly successful
       } catch (error) {
         console.error("Error submitting comment:", error);
-      } finally {
         loading.value = false;
       }
     };
@@ -201,7 +201,6 @@ export default {
       submitComment,
       clearError,
       clearAll,
-      clearBodyOnly,
     };
   },
 };
